@@ -8,6 +8,10 @@ coverage/
 .env
 .env.*
 !.env.example
+# backups (dados pessoais e possiveis credenciais)
+backups-private/
+*.dump
+*.backup
 # platform
 .vercel/
 .supabase/
