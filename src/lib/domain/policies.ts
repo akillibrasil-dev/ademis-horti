@@ -14,13 +14,13 @@ export function mayStartPreparation(payment: PaymentState): boolean {
  return payment === 'CONFIRMED_MANUAL' || payment === 'PAID';
 }
 
-export function maximumPresaleUnits(estimated: number, ratio = POLICY_DEFAULTS.ownHarvestPresaleRatio) {
+export function maximumPresaleUnits(estimated: number, ratio: number = POLICY_DEFAULTS.ownHarvestPresaleRatio) {
  if (!Number.isSafeInteger(estimated) || estimated < 0) throw new RangeError('Invalid quantity');
  if (!Number.isFinite(ratio) || ratio < 0 || ratio > 1) throw new RangeError('Invalid ratio');
  return Math.floor(estimated * ratio);
 }
 
-export function needsWeighingReview(estimated: number, actual: number, threshold = POLICY_DEFAULTS.weighingReviewRatio) {
+export function needsWeighingReview(estimated: number, actual: number, threshold: number = POLICY_DEFAULTS.weighingReviewRatio) {
  if (!Number.isFinite(estimated) || !Number.isFinite(actual) || !Number.isFinite(threshold)
   || estimated <= 0 || actual < 0 || threshold < 0 || threshold > 1) throw new RangeError('Invalid quantity');
  return Math.abs(actual - estimated) / estimated > threshold;
