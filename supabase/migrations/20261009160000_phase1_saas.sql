@@ -166,8 +166,7 @@ create policy profiles_update_own on public.profiles for update to authenticated
  using(id=(select auth.uid())) with check(id=(select auth.uid()));
 create policy organizations_select_member on public.organizations for select to authenticated
  using(public.is_org_member(id));
-create policy organizations_update_admin on public.organizations for update to authenticated
- using(public.is_org_admin(id)) with check(public.is_org_admin(id));
+-- Organization identity/ownership cannot be altered via a raw client UPDATE.
 create policy members_select_member on public.organization_members for select to authenticated
  using(public.is_org_member(organization_id));
 create policy plans_select_authenticated on public.plans for select to authenticated using(true);
@@ -189,7 +188,10 @@ revoke insert,update,delete on public.subscriptions from authenticated, anon;
 revoke insert,update,delete on public.audit_logs from authenticated, anon;
 revoke all on public.app_admins from authenticated, anon;
 revoke insert,update,delete on public.plans,public.features,public.plan_features from authenticated, anon;
-revoke insert,delete on public.organizations,public.organization_settings from authenticated, anon;
+revoke insert,update,delete on public.organizations from authenticated, anon;
+revoke insert,delete on public.organization_settings from authenticated, anon;
+revoke update on public.profiles from authenticated, anon;
+grant update(display_name) on public.profiles to authenticated;
 -- RLS is also enabled and no insert/delete policy is provided.
 
 create function public.create_organization(p_name text,p_slug text)
@@ -226,6 +228,14 @@ begin
  select id into v_user from auth.users
  where lower(email)=lower(btrim(p_email)) and email_confirmed_at is not null;
  if v_user is null then raise exception 'User not found; they must register first'; end if;
+ -- Never demote the last active organization administrator, including self.
+ if p_role <> 'ORG_ADMIN' and exists (
+  select 1 from public.organization_members where organization_id=p_org
+    and user_id=v_user and role='ORG_ADMIN' and status='active'
+ ) and (select count(*) from public.organization_members
+   where organization_id=p_org and role='ORG_ADMIN' and status='active') <= 1 then
+  raise exception 'Cannot demote last administrator';
+ end if;
  insert into public.organization_members(organization_id,user_id,role,status)
  values(p_org,v_user,p_role,'active')
  on conflict(organization_id,user_id) do update
@@ -299,3 +309,31 @@ create trigger on_auth_user_created
 -- Bootstrap a platform administrator only by manually applying the account's
 -- auth.users ID via privileged SQL, never via a public endpoint:
 -- INSERT INTO public.app_admins (user_id) VALUES ('<AUTHORIZED_USER_UUID>');
+
+-- The team list must not expose auth.users emails to all organization members.
+-- Only the organization's administrator may fetch team contact details.
+create function public.list_org_members(p_org uuid)
+returns table(user_id uuid,email text,role text,status text)
+language plpgsql stable security definer set search_path = '' as $$
+begin
+ if not public.is_org_admin(p_org) then raise exception 'Not permitted'; end if;
+ return query select m.user_id,u.email::text,m.role,m.status
+ from public.organization_members m join auth.users u on u.id=m.user_id
+ where m.organization_id=p_org and m.status='active'
+ order by m.created_at;
+end; $$;
+revoke all on function public.list_org_members(uuid) from public, anon;
+grant execute on function public.list_org_members(uuid) to authenticated;
+
+-- Settings are editable only by admins via RLS; still record every mutation.
+create function public.audit_settings_change()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+ if new is distinct from old then
+  insert into public.audit_logs(organization_id,actor_user_id,action,resource_type,resource_id)
+  values(new.organization_id,auth.uid(),'settings.updated','organization_settings',new.organization_id::text);
+ end if;
+ return new;
+end; $$;
+create trigger audit_settings_update after update on public.organization_settings
+for each row execute function public.audit_settings_change();

@@ -4,6 +4,8 @@ import { updateSession } from '@/lib/supabase/middleware';
 export async function middleware(request: NextRequest) {
  return updateSession(request);
 }
+// Public landing/login do not require environment credentials to render.
+// Protected areas refresh sessions and verify authentication server-side.
 export const config = {
- matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+ matcher: ['/app/:path*', '/admin/:path*'],
 };
