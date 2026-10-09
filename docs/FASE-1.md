@@ -42,3 +42,30 @@ CI verde; migrations funcionando; RLS testado negativamente com dois tenants; lo
 
 ## Pendências e restrições
 Definir responsáveis de engenharia, duração dos trials e política de cadastro de organizações. Implementar proteção antiabuso e convites por e-mail antes de abrir onboarding público em escala. Criar package-lock.json e trocar CI para npm ci. Não presumir aceite do Sítio Recanto do Passira como Cliente Zero.
+
+
+## Execução efetiva — 09/10/2026
+
+- Projeto Supabase exclusivo: cfgsntegevijwvbhbbyv, PostgreSQL 17.11, região us-east-1.
+- Migração original homologada estruturalmente: supabase/migrations/20261009181033_phase1_saas.sql; registro remoto de mesma versão.
+- Migração de segurança: supabase/migrations/20261009181558_phase1_hardening.sql; registro remoto de mesma versão.
+- Banco com 10 tabelas public, todas RLS, 11 políticas, 12 funções inicialmente implantadas, 2 planos, 23 recursos e 36 associações.
+- Hardening: remoção de EXECUTE público das funções de gatilho; quatro índices de FK.
+- Teste SQL transacional com duas identidades fictícias, dois tenants e ROLLBACK final executado; sem exceções: criação de organizações, RLS SELECT, roles, recursos Essencial, bloqueio de membership alheia, plano não autorizado e último gestor.
+- Conferência após ROLLBACK: nenhum usuário ou organização sintético persistido (auth.users=0, organizations=0).
+- Supabase Advisors reexecutado: aviso de RLS em app_admins sem policies é deliberado (deny-all); funções de negócio SECURITY DEFINER continuam invocáveis por authenticated mas incluem autorização interna, exigindo revisão periódica e testes E2E.
+- Vercel project ID prj_2k2v6hs9M6O7jqSF6JHXzcKcSRuP; URL de referência: https://ademis-horti-akilli-tracking.vercel.app; proteção SSO mantida.
+- Variáveis configuradas: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY (chave pública, protegida nas configurações Vercel) e NEXT_PUBLIC_SITE_URL. Não há service_role.
+- Deploy Git inicial do commit 836c1de atingiu estado READY no Vercel; segunda implantação de preview para incorporar NEXT_PUBLIC_SITE_URL foi solicitada.
+- CI do commit 836c1de aprovada: lint, typecheck, Vitest e build.
+
+## Gates ainda em aberto
+
+1. **Configuração Auth no dashboard Supabase:** Site URL https://ademis-horti-akilli-tracking.vercel.app; Redirect URLs https://ademis-horti-akilli-tracking.vercel.app/auth/callback e URL específica do preview quando necessário. Essa configuração de administração não está disponível por esta conexão Supabase.
+2. **Administrador real:** registrar/confirmar conta Auth e cadastrar seu UUID na tabela app_admins via SQL autorizado. Não criar usuário real ou vincular terceiro sem consentimento explícito.
+3. **E2E real:** validar cadastro, confirmação, login, logout, criação de duas organizações, alternância, equipe, parâmetros e mudança de planos no app publicado. O teste SQL transacional não substitui esse ciclo completo.
+4. **Git-Vercel:** projeto Vercel criado sem vínculo permanente por falta de permissão de link no repositório (repo_no_access), mas deployments sob demanda a partir da branch funcionam. Conectar repositório com acesso admin no painel da Vercel para CI/CD automático.
+5. **Backup e restore:** validar capacidades do plano Supabase e executar ensaio de recuperação antes de receber dados reais.
+6. **Lockfile:** package-lock.json ainda não versionado; gerar no ambiente npm acessível e ajustar CI para npm ci.
+
+**Status de conclusão:** Infraestrutura e smoke tests SQL concluídos; homologação integral dependente dos seis gates acima. Não mesclar PR #1 até a validação funcional.
