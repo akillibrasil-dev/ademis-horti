@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { classifySignupError } from '@/lib/auth/signup-errors';
 
 const credentials = z.object({
  email: z.string().trim().email().max(254),
@@ -34,7 +35,11 @@ export async function signUp(form: FormData) {
    emailRedirectTo: new URL('/auth/callback', siteUrl).toString(),
   },
  });
- if (error) redirect('/registrar?erro=cadastro');
+ if (error) {
+  // Do not log addresses, passwords or tokens; only generic diagnostic codes.
+  console.warn('Ademis Horti signup failed', { code: error.code ?? 'unknown', status: error.status });
+  redirect('/registrar?erro=' + classifySignupError(error));
+ }
  redirect('/entrar?aviso=confirmar');
 }
 
