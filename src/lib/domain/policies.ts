@@ -23,5 +23,5 @@ export function maximumPresaleUnits(estimated: number, ratio: number = POLICY_DE
 export function needsWeighingReview(estimated: number, actual: number, threshold: number = POLICY_DEFAULTS.weighingReviewRatio) {
  if (!Number.isFinite(estimated) || !Number.isFinite(actual) || !Number.isFinite(threshold)
   || estimated <= 0 || actual < 0 || threshold < 0 || threshold > 1) throw new RangeError('Invalid quantity');
- return Math.abs(actual - estimated) / estimated > threshold;
+ return Math.abs(actual - estimated) > estimated * threshold + Number.EPSILON * Math.max(1, Math.abs(actual));
 }
