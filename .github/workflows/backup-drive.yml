@@ -1,0 +1,32 @@
+name: Ademis Horti — encrypted Drive backup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'  # 03:17 America/Recife (UTC-3); GitHub may delay scheduled runs
+permissions:
+  contents: read
+concurrency:
+  group: ademis-horti-backup
+  cancel-in-progress: false
+jobs:
+  export-encrypt-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ADEMIS_SUPABASE_DB_URL: ${{ secrets.ADEMIS_SUPABASE_DB_URL }}
+      ADEMIS_AGE_RECIPIENT: ${{ secrets.ADEMIS_AGE_RECIPIENT }}
+      ADEMIS_GDRIVE_RCLONE_CONFIG: ${{ secrets.ADEMIS_GDRIVE_RCLONE_CONFIG }}
+    steps:
+      # The production branch intentionally contains only this workflow.
+      # Pull the vetted backup script and migrations from the exact Phase 1 commit,
+      # without merging or deploying Phase 1 application code.
+      - uses: actions/checkout@v4
+        with:
+          ref: e0238547e8195647eafc4cc64dc4fa952d5566f3
+          persist-credentials: false
+      - name: Install rclone and age
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y age rclone
+      - name: Run encrypted backup
+        run: bash scripts/backup/export-drive-encrypted.sh
