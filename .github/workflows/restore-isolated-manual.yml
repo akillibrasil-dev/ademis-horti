@@ -1,0 +1,27 @@
+name: Ademis Horti — isolated restore (manual)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ademis-horti-one-time-restore
+  cancel-in-progress: false
+jobs:
+  isolated-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout pinned recovery test code (never main production)
+        uses: actions/checkout@v4
+        with:
+          ref: a0801de484f2b273ddc955c31d98a005da4e3810
+          persist-credentials: false
+      - name: Install age and rclone
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y age rclone
+      - name: Restore encrypted Drive backup to isolated disposable PostgreSQL
+        env:
+          ADEMIS_GDRIVE_RCLONE_CONFIG: ${{ secrets.ADEMIS_GDRIVE_RCLONE_CONFIG }}
+          ADEMIS_AGE_RESTORE_TEST_KEY: ${{ secrets.ADEMIS_AGE_RESTORE_TEST_KEY }}
+        run: bash scripts/backup/restore-smoke-test.sh
