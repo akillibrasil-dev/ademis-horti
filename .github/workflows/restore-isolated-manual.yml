@@ -1,6 +1,9 @@
 name: Ademis Horti — isolated restore (manual)
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/restore-isolated-manual.yml]
 permissions:
   contents: read
 concurrency:
