@@ -63,7 +63,7 @@ docker exec "$db_container" createdb -U postgres ademis_restore_test
 docker exec "$db_container" psql -v ON_ERROR_STOP=1 -U postgres \
   -d ademis_restore_test -c 'DROP SCHEMA public CASCADE;' >/dev/null
 docker exec "$db_container" psql -v ON_ERROR_STOP=1 -U postgres \
-  -d ademis_restore_test -c 'CREATE SCHEMA extensions; CREATE EXTENSION pgcrypto;' >/dev/null
+  -d ademis_restore_test -c 'CREATE SCHEMA extensions; CREATE EXTENSION pgcrypto WITH SCHEMA extensions;' >/dev/null
 docker cp "$workdir/payload/database.dump" "$db_container:/tmp/database.dump"
 
 echo 'Restoring into a new disposable database...'
