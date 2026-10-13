@@ -58,6 +58,10 @@ for role in anon authenticated service_role authenticator supabase_admin \
     -d postgres -c "CREATE ROLE $role;" >/dev/null
 done
 docker exec "$db_container" createdb -U postgres ademis_restore_test
+# The disposable PostgreSQL instance creates public by default.
+# Remove only this empty test schema; pg_restore will recreate it from the backup.
+docker exec "$db_container" psql -v ON_ERROR_STOP=1 -U postgres \
+  -d ademis_restore_test -c 'DROP SCHEMA public CASCADE;' >/dev/null
 docker exec "$db_container" psql -v ON_ERROR_STOP=1 -U postgres \
   -d ademis_restore_test -c 'CREATE SCHEMA extensions; CREATE EXTENSION pgcrypto;' >/dev/null
 docker cp "$workdir/payload/database.dump" "$db_container:/tmp/database.dump"
