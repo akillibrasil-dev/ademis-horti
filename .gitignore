@@ -1,0 +1,20 @@
+# deps
+node_modules/
+.next/
+out/
+build/
+coverage/
+# secrets
+.env
+.env.*
+!.env.example
+# backups (dados pessoais e possiveis credenciais)
+backups-private/
+*.dump
+*.backup
+# platform
+.vercel/
+.supabase/
+*.log
+.DS_Store
+*.tsbuildinfo

@@ -1,0 +1,24 @@
+name: Ademis Horti — isolated restore test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ademis-horti-isolated-restore
+  cancel-in-progress: false
+jobs:
+  verify-existing-backup:
+    if: github.ref == 'refs/heads/feat/fase-1-fundacao-saas'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install backup tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y age rclone
+      - name: Decrypt and restore existing Google Drive backup to disposable PostgreSQL
+        env:
+          ADEMIS_GDRIVE_RCLONE_CONFIG: ${{ secrets.ADEMIS_GDRIVE_RCLONE_CONFIG }}
+          ADEMIS_AGE_RESTORE_TEST_KEY: ${{ secrets.ADEMIS_AGE_RESTORE_TEST_KEY }}
+        run: bash scripts/backup/restore-smoke-test.sh

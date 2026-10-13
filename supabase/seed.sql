@@ -1,0 +1,1 @@
+-- No customer or real personal data in seed. Plans/features are inserted by migration.
