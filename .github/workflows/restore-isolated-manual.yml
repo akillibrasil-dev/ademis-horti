@@ -17,7 +17,7 @@ jobs:
       - name: Checkout pinned recovery test code (never main production)
         uses: actions/checkout@v4
         with:
-          ref: 390243352716d586322f4a630a6076519ba11c7c
+          ref: 6f81b07a78556450354bf539b0d3543369a9d2ac
           persist-credentials: false
       - name: Install age and rclone
         run: |
