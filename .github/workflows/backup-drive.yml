@@ -1,13 +1,6 @@
 name: Ademis Horti — encrypted Drive backup
 on:
-  # Push-triggered first test in the feature branch. Subsequent daily schedules
-  # only run once this workflow is included in the repository default branch.
-  push:
-    branches:
-      - feat/fase-1-fundacao-saas
-    paths:
-      - .github/workflows/backup-drive.yml
-      - scripts/backup/export-drive-encrypted.sh
+  # Daily schedules run only from the default branch; manual execution remains available.
   workflow_dispatch:
   schedule:
     - cron: '17 6 * * *'  # 03:17 Brasilia time (UTC-3); Actions may be delayed
