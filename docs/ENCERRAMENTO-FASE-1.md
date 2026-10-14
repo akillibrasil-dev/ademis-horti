@@ -12,7 +12,7 @@
 ## 2. Preview Vercel no novo projeto Akilli Brasil — AGUARDANDO HML
 - Projeto oficial de desenvolvimento: Vercel equipe `akilli-brasils-projects` (`team_rE6lQvWV3dQp4Tmsa4ZpOvaZ`), projeto `prj_2htyQXWwcdNcx2T3LGOgAbhqtgYn`.
 - Conexão GitHub nativa confirmada: `akillibrasil-dev/ademis-horti`.
-- Inspeção de 14/10: nenhum deployment e nenhuma variável de ambiente.
+- Situação atualizada em 14/10: integração Git disparou deployments automáticos da branch de Fase 1; Preview READY (exemplo: `dpl_ApXa9DPUa38VAQBcrJHe3iPqiTro`), **nenhuma variável de ambiente**; por isso build READY não comprova autenticação nem funcionamento conectado ao banco HML. O primeiro commit após vínculo teve deployment inicial etiquetado como `production` pela Vercel (`dpl_41sWtrVVjZEjxv5qAtAXKA4u8Wrh`), SEM promoção autorizada ou configuração de banco: revisar Production Branch no painel antes de qualquer publicação real; SSO segue ativo.
 - Configurar **somente Preview** com `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable/anon) do **HML** e `NEXT_PUBLIC_SITE_URL` da URL resultante; nunca inserir `service_role`.
 - Deploy Preview da branch `feat/fase-1-fundacao-saas`, confirmar estado READY, rota de callback Auth e isolamento; `main` mantém produção separada até liberação.
 
